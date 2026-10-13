@@ -47,7 +47,7 @@ payload = {
     'api_key': nsrdb_key,
     'wkt': 'POINT(-88.62 41.87)',
     'attributes': 'dhi',
-    'names': '2018',
+    'names': '2017',
     'utc': 'false',
     'email': email,
     'interval': '60',
@@ -57,7 +57,12 @@ headers = {
     'content-type': "application/x-www-form-urlencoded",
     'cache-control': "no-cache"
 }
+
 response = requests.request("POST", url, data=payload, headers=headers)
+if response.status_code != 200:
+    print(f"Error occurred while fetching data: {response.status_code}")
+    print(f"Error details: {response.text}")
+    exit(1)
 
 with open('test-data/solar_data.csv', 'w') as f:
     f.write(response.text)
