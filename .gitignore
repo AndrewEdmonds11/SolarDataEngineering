@@ -22,3 +22,6 @@ build/
 
 # Logs
 *.log
+
+# Miscellaneous
+test-data
