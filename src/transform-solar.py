@@ -38,8 +38,36 @@ df['DHI'] = pd.to_numeric(df['DHI'], errors="coerce")
 print(df.head(24))
 
 import matplotlib.pyplot as plt
-plt.plot(df['timestamp'], df['DHI'], '-')
-plt.xlabel('timestamp')
-plt.ylabel('DHI')
-plt.title('Solar Data')
+
+day_strs = ['2018-01-01', '2018-06-01', '2018-12-01']
+for day_str in day_strs:
+    day = pd.to_datetime(day_str)
+    single_day_df = df[df['timestamp'].dt.date == day.date()]
+    plt.plot(single_day_df['timestamp'].dt.hour, single_day_df['DHI'], marker='o', linestyle='-', label=day_str)
+
+#print(single_day_df.head(24))
+
+#print(df.dtypes)
+
+#daytime_df = df[(df['DHI']!=0) & (df['DHI'].notnull())]
+#print(daytime_df.head(24))
+
+#grouped_df = daytime_df.groupby(daytime_df['timestamp'].dt.date).agg({'DHI': ['mean', 'std']}).reset_index()
+#print(grouped_df.head(10))
+
+plt.xlabel('Hour of Day')
+plt.ylabel('DHI [W/m^2]')
+plt.title('DHI over Time for a Single Day')
+plt.grid(True)
+plt.legend()
 plt.show()
+
+#plt.hist(df[df['timestamp'].dt.date == df['timestamp'].dt.date.iloc[0]]['DHI'], bins=30, edgecolor='black')
+#plt.xlabel('DHI')
+#plt.show()
+
+#plt.errorbar(grouped_df['timestamp'], grouped_df[('DHI', 'mean')], yerr=grouped_df[('DHI', 'std')], fmt='.', capsize=2)
+#plt.xlabel('timestamp')
+#plt.ylabel('DHI')
+#plt.title('Solar Data')
+#plt.show()
