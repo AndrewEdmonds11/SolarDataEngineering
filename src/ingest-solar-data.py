@@ -43,11 +43,13 @@ email = os.getenv("EMAIL")
 
 url = "https://developer.nlr.gov/api/nsrdb/v2/solar/nsrdb-GOES-conus-v4-0-0-download.csv?api_key="+nsrdb_key 
 
+longitude = -87.62  # Example longitude
+latitude = 41.88    # Example latitude
 payload = {
     'api_key': nsrdb_key,
-    'wkt': 'POINT(-88.62 41.87)',
+    'wkt': f'POINT({longitude} {latitude})',
     'attributes': 'dhi',
-    'names': '2017',
+    'names': '2018',
     'utc': 'false',
     'email': email,
     'interval': '60',
@@ -64,7 +66,8 @@ if response.status_code != 200:
     print(f"Error details: {response.text}")
     exit(1)
 
-with open('test-data/solar_data.csv', 'w') as f:
+filename = f'solar_data_{longitude}_{latitude}.csv'
+with open('test-data/solar_data.csv', 'w') as f: # put in temporary location
     f.write(response.text)
 
-upload_to_s3('test-data/solar_data.csv', os.getenv("S3_BUCKET_NAME"), 'solar_data.csv')
+upload_to_s3('test-data/solar_data.csv', os.getenv("S3_BUCKET_NAME"), filename)
