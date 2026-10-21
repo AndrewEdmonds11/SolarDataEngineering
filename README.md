@@ -14,3 +14,9 @@ A cloud-based data pipeline
 ## Scripts
 src/ingest-solar-data.py
 * retrieves CSV data from NSRDB and uploads to AWS S3 bucket
+
+src/transform_solar.py
+* takes CRV data and returns just the daylight hours data and creates a timestamp column
+
+## Webpage
+Streamlit web app plots the data
