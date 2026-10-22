@@ -8,6 +8,7 @@ import src.transform_solar as transform_solar
 from src.ingest_solar_data import fetch_nsrdb_data
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderServiceError
 
@@ -25,6 +26,10 @@ bucket_name = os.getenv("S3_BUCKET_NAME")
 
 # Initialize the geocoder with a custom user-agent
 geolocator = Nominatim(user_agent="my_streamlit_location_app")
+
+# We will need to keep track of all the charts that we add to the figure
+if "chart_layers" not in st.session_state:
+    st.session_state.chart_layers = []
 
 with st.form("fetch_data"):
     # 1. Provide a text field for the address
@@ -76,13 +81,24 @@ if submitted:
             file_content = response['Body'].read().decode('utf-8')
             
             df = transform_solar.process_raw_data(file_content)
-            
-            fig = px.line(df.groupby(df['timestamp'].dt.date).agg({'DHI': 'mean'}), y='DHI', title=f'Daily Mean Direct Horizontal Irradiance (DHI) [W/m^2] ({address_input})')
-            fig.update_yaxes(rangemode="tozero")
-            st.plotly_chart(fig)
+
+            group_df = df.groupby(df['timestamp'].dt.date).agg({'DHI': 'mean'}).reset_index()
+            new_layer = {
+                'x' : group_df['timestamp'],
+                'y' : group_df['DHI'],
+                'location' : address_input
+            }
+            st.session_state.chart_layers.append(new_layer)
 
         else:
                 st.error("Could not find that location. Please try a more specific address.")
                 
     except GeocoderServiceError:
         st.error("The geocoding service is currently busy or unavailable. Please try again.")
+
+if st.session_state.chart_layers:
+    fig = go.Figure()
+    for layer in st.session_state.chart_layers:
+        fig.add_trace(go.Scatter(x=layer['x'], y=layer['y'], mode='lines', name=layer['location']))
+    fig.update_yaxes(rangemode="tozero")
+    st.plotly_chart(fig, width='stretch')
