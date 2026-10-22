@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderServiceError
 
+st.set_page_config(layout="wide")
 st.title("Solar Data Explorer :sunny:")
 st.write("Hello World! :sunny:")
 
