@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 import time
 import src.transform_solar as transform_solar
+from src.ingest_solar_data import fetch_nsrdb_data
 import pandas as pd
 import plotly.express as px
 from geopy.geocoders import Nominatim
@@ -53,28 +54,32 @@ if submitted:
             try:
                 s3_client.head_object(Bucket=bucket_name, Key=file_key)
                 st.success(f"Data for this location already exists in S3: {file_key}")
-
-                start_time = time.time()
-                                            
-                # Fetch the object from S3
-                file_content = "Failure"
-                with st.spinner("Fetching..."):
-                    response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-                
-                    # Calculate final elapsed time
-                    elapsed_time = time.time() - start_time
-                
-                    st.write(f"File content fetched from S3 in {elapsed_time:.2f} seconds.")
-                file_content = response['Body'].read().decode('utf-8')
-                
-                df = transform_solar.process_raw_data(file_content)
-                
-                fig = px.line(df.groupby(df['timestamp'].dt.date).agg({'DHI': 'mean'}), y='DHI', title='Daily Mean Direct Horizontal Irradiance (DHI) [W/m^2]]')
-                fig.update_yaxes(rangemode="tozero")
-                st.plotly_chart(fig)
             
             except botocore.exceptions.ClientError as e:
-                st.info(f"Data for this location does not exist in S3.")# A new file will be created: {file_key}")
+                st.info(f"Data for this location does not exist in S3. A new file will be created: {file_key}")
+                with st.spinner("Fetching data from NSRDB and uploading to S3..."):
+                    start_time = time.time()  
+                    fetch_nsrdb_data(lon, lat)
+                    # Calculate final elapsed time
+                    elapsed_time = time.time() - start_time
+                    st.write(f"Data fetched from NSRDB and uploaded to S3 in {elapsed_time:.2f} seconds.")
+
+            start_time = time.time()                                           
+            # Fetch the object from S3
+            file_content = "Failure"
+            with st.spinner("Fetching..."):
+                response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+            
+                # Calculate final elapsed time
+                elapsed_time = time.time() - start_time
+                st.write(f"File content fetched from S3 in {elapsed_time:.2f} seconds.")
+            file_content = response['Body'].read().decode('utf-8')
+            
+            df = transform_solar.process_raw_data(file_content)
+            
+            fig = px.line(df.groupby(df['timestamp'].dt.date).agg({'DHI': 'mean'}), y='DHI', title=f'Daily Mean Direct Horizontal Irradiance (DHI) [W/m^2] ({address_input})')
+            fig.update_yaxes(rangemode="tozero")
+            st.plotly_chart(fig)
 
         else:
                 st.error("Could not find that location. Please try a more specific address.")
