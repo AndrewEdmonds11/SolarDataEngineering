@@ -34,9 +34,10 @@ def process_raw_data(file_content):
             "minute": df["Minute"],
         },
         errors="coerce",
-    )
-    df['DHI'] = pd.to_numeric(df['DHI'], errors="coerce")
-    return df[(df['DHI']!=0) & (df['DHI'].notnull())] # only return daylight hours
+    
+    df['DHI'] = pd.to_numeric(df['DHI'], errors="coerce"))
+    df['GHI'] = pd.to_numeric(df['GHI'], errors="coerce")
+    return df # df[(df['DHI']!=0) & (df['DHI'].notnull())] # only return daylight hours
 
 #print(df.head(24))
 

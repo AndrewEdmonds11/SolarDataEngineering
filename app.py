@@ -83,10 +83,10 @@ if submitted:
             
             df = transform_solar.process_raw_data(file_content)
 
-            group_df = df.groupby(df['timestamp'].dt.date).agg({'DHI': 'mean'}).reset_index()
+            group_df = df.groupby(df['timestamp'].dt.date).agg({'GHI': 'mean'}).reset_index()
             new_layer = {
                 'x' : group_df['timestamp'],
-                'y' : group_df['DHI'],
+                'y' : group_df['GHI'],
                 'location' : address_input
             }
             st.session_state.chart_layers.append(new_layer)
@@ -101,5 +101,5 @@ if st.session_state.chart_layers:
     fig = go.Figure()
     for layer in st.session_state.chart_layers:
         fig.add_trace(go.Scatter(x=layer['x'], y=layer['y'], mode='lines', name=layer['location']))
-    fig.update_yaxes(rangemode="tozero")
+    fig.update_yaxes(rangemode="tozero", title_text="Global Horizontal Irradiance (GHI) [W/m^2]")
     st.plotly_chart(fig, width='stretch')

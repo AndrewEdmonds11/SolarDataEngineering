@@ -50,7 +50,7 @@ def fetch_nsrdb_data(longitude, latitude):
     payload = {
         'api_key': nsrdb_key,
         'wkt': f'POINT({longitude:.2f} {latitude:.2f})',
-        'attributes': 'dhi',
+        #'attributes': 'dni,ghi',
         'names': '2018',
         'utc': 'false',
         'email': email,
